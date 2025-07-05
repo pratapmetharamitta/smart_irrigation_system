@@ -6,6 +6,7 @@ A comprehensive IoT-based smart irrigation system for automated watering and mon
 
 This project implements a complete smart irrigation solution with:
 - Edge devices for sensor monitoring
+- LoRa mesh networking for remote device communication
 - Cloud backend for data management
 - Mobile app for remote control
 - Real-time analytics and automation
@@ -17,11 +18,11 @@ This project implements a complete smart irrigation solution with:
 ## 🏗️ Architecture
 
 ```
-Edge Devices ↔ Cloud Backend ↔ Mobile App
-     ↓              ↓              ↓
-   MQTT       REST API       React Native
-     ↓              ↓              ↓
-   Sensors     PostgreSQL    iOS/Android
+Edge Devices ↔ LoRa Network ↔ Gateway ↔ Cloud Backend ↔ Mobile App
+     ↓            ↓            ↓         ↓              ↓
+   Sensors    433/868/915MHz  TTGO      REST API    React Native
+     ↓            ↓            ↓         ↓              ↓
+  Moisture      Long Range    WiFi   PostgreSQL    iOS/Android
 ```
 
 ## 📝 Development Log
@@ -128,6 +129,38 @@ The project includes comprehensive GitHub Actions workflows:
 # Clean up environment
 ./dev.sh cleanup
 ```
+
+## 📡 LoRa Network Component
+
+The `Node/` directory contains TTGO LoRa series board implementations for long-range wireless communication:
+
+### Features
+- **Multi-frequency support**: 433MHz, 868MHz, 915MHz
+- **Multiple board versions**: V1.0, V1.2, V1.6, V2.0
+- **OLED display integration**: Real-time status monitoring
+- **SD card support**: Data logging capabilities
+- **WiFi connectivity**: Gateway functionality
+- **Sensor integration**: Soil moisture, temperature monitoring
+
+### Board Compatibility
+- TTGO LoRa V1.0 (with 3D WiFi antenna for 868MHz, PCB antenna for 433MHz)
+- TTGO LoRa V1.2 (T-Fox variant)
+- TTGO LoRa V1.6 (with SD card support)
+- TTGO LoRa V2.0 (latest version)
+
+### Setup Instructions
+1. Configure board version in `Node/LoRa/board_def.h`
+2. Set frequency band (433/868/915MHz)
+3. Configure as sender or receiver mode
+4. Install required libraries:
+   - [arduino-LoRa](https://github.com/sandeepmistry/arduino-LoRa)
+   - [oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306)
+
+### Applications
+- **Remote sensors**: Soil moisture, temperature monitoring
+- **Valve control**: Remote irrigation system control
+- **Data gateway**: LoRa to WiFi bridge
+- **Mesh networking**: Extended range coverage
 
 ---
 

@@ -170,6 +170,7 @@ Debug/
 *.tmp
 *.bak
 *.cache
+*.sketch
 
 # PlatformIO
 .pio/
@@ -179,6 +180,22 @@ Debug/
 # Espressif IoT Development Framework
 esp-idf/
 .espressif/
+
+# LoRa and RF specific
+*.lora_backup
+*.rf_config
+
+# Arduino Libraries (if included locally)
+libraries/
+lib/tmp/
+
+# Board-specific cache
+board_cache/
+
+# Compilation artifacts
+*.size
+*.lst
+*.sym
 
 # ===== CLOUD / BACKEND =====
 # Logs
