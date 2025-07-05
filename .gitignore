@@ -1,0 +1,306 @@
+# ===========================================
+# Smart Irrigation System - .gitignore
+# ===========================================
+
+# ===== GENERAL =====
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== NODE.JS / JAVASCRIPT =====
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# ===== REACT NATIVE / MOBILE APP =====
+# OSX
+.DS_Store
+
+# Xcode
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+project.xcworkspace
+
+# Android/IntelliJ
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+
+# BUCK
+buck-out/
+\.buckd/
+*.keystore
+!debug.keystore
+
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+/ios/Pods/
+
+# Expo
+.expo/
+web-build/
+
+# React Native CLI
+.metro-health-check*
+
+# ===== ARDUINO / ESP32 / EMBEDDED =====
+# Compiled files
+*.hex
+*.bin
+*.elf
+*.map
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Build directories
+build/
+Release/
+Debug/
+
+# Arduino IDE
+*.tmp
+*.bak
+*.cache
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Espressif IoT Development Framework
+esp-idf/
+.espressif/
+
+# ===== CLOUD / BACKEND =====
+# Logs
+logs
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+*.cache
+
+# Temporary files
+*.tmp
+*.temp
+
+# Configuration files with sensitive data
+config.json
+secrets.json
+*.pem
+*.key
+*.p12
+*.cert
+*.crt
+
+# Cloud deployment files
+.serverless/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# ===== DOCUMENTATION =====
+# Generated documentation
+docs/generated/
+site/
+
+# ===== MISC =====
+# Backup files
+*.backup
+*.old
+*.orig
+
+# Archive files
+*.zip
+*.rar
+*.tar
+*.tar.gz
+*.7z
+
+# Test files
+test-results/
+coverage/
+
+# Development files
+*.dev
+*.test
+*.spec
+
+# Lock files (optional - uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+
+# Large media files (uncomment if needed)
+# *.mp4
+# *.avi
+# *.mov
+# *.wmv
+# *.flv
+# *.webm
+
+# ===== PROJECT SPECIFIC =====
+# Large binary files that shouldn't be in Git
+*.bin
+*.hex
+*.elf
+*.map
+
+# Large documentation files
+*.pdf
+*.doc
+*.docx
+
+# CAD and 3D files
+*.step
+*.stp
+*.dwg
+*.dxf
+
+# Large media files
+*.gif
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+
+# Sensor data files
+sensor_data/
+data_logs/
+
+# Calibration files
+calibration/
+*.cal
+
+# Generated reports
+reports/
+*.report
+
+# Hardware design files
+*.kicad_*
+*.brd
+*.sch
+*.lib
+
+# Firmware binaries
+firmware/*.bin
+firmware/*.hex
+
+# Temporary sensor readings
+readings/
+temp_data/
