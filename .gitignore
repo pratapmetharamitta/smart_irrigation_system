@@ -259,14 +259,14 @@ coverage/
 *.elf
 *.map
 
-# Large documentation files
-*.pdf
+# Large documentation files (keeping PDFs for project docs)
+# *.pdf
 *.doc
 *.docx
 
-# CAD and 3D files
+# CAD and 3D files (keeping .stp for hardware design)
 *.step
-*.stp
+# *.stp
 *.dwg
 *.dxf
 
