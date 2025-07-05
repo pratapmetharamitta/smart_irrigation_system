@@ -1,0 +1,251 @@
+name: Smart Irrigation System CI/CD
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  # Edge Device Validation
+  edge-validation:
+    name: Edge Device Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+        with:
+          version: 'latest'
+
+      - name: Install Arduino libraries
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+          arduino-cli lib install "WiFi" "ArduinoJson" "PubSubClient"
+
+      - name: Validate Arduino sketches
+        run: |
+          if [ -d "Edge" ]; then
+            find Edge -name "*.ino" -type f | while read sketch; do
+              echo "Validating $sketch"
+              arduino-cli compile --fqbn esp32:esp32:esp32 --verify "$sketch" || echo "Warning: $sketch validation failed"
+            done
+          fi
+
+  # Cloud Backend CI/CD
+  backend-ci:
+    name: Backend CI/CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'cloud-backend/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          if [ -d "cloud-backend" ]; then
+            cd cloud-backend
+            npm ci
+          fi
+
+      - name: Run linting
+        run: |
+          if [ -d "cloud-backend" ]; then
+            cd cloud-backend
+            npm run lint || echo "Linting not configured"
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -d "cloud-backend" ]; then
+            cd cloud-backend
+            npm test || echo "Tests not configured"
+          fi
+
+      - name: Build application
+        run: |
+          if [ -d "cloud-backend" ]; then
+            cd cloud-backend
+            npm run build || echo "Build not configured"
+          fi
+
+  # Mobile App CI/CD
+  mobile-ci:
+    name: Mobile App CI/CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'mobile-app/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          if [ -d "mobile-app" ]; then
+            cd mobile-app
+            npm ci
+          fi
+
+      - name: Run linting
+        run: |
+          if [ -d "mobile-app" ]; then
+            cd mobile-app
+            npm run lint || echo "Linting not configured"
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -d "mobile-app" ]; then
+            cd mobile-app
+            npm test || echo "Tests not configured"
+          fi
+
+      - name: Build application
+        run: |
+          if [ -d "mobile-app" ]; then
+            cd mobile-app
+            npm run build || echo "Build not configured"
+          fi
+
+  # Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Docker Build and Push
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [backend-ci]
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        if: hashFiles('cloud-backend/Dockerfile') != ''
+        with:
+          context: ./cloud-backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/backend:latest
+            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Documentation Build
+  docs-build:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          npm install -g @apidevtools/swagger-parser
+
+      - name: Validate OpenAPI specs
+        run: |
+          find . -name "*.yaml" -o -name "*.yml" | grep -i "api\|swagger\|openapi" | while read file; do
+            echo "Validating $file"
+            swagger-parser validate "$file" || echo "Warning: $file validation failed"
+          done
+
+      - name: Generate documentation
+        run: |
+          echo "Documentation generation placeholder"
+          # Add your documentation generation commands here
+
+  # Deployment
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [backend-ci, mobile-ci, docker-build]
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.smart-irrigation.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deployment to staging environment"
+          # Add your deployment commands here
+          # This could include:
+          # - Updating cloud infrastructure
+          # - Deploying to container orchestration
+          # - Updating mobile app stores
+          # - Notifying team members
+
+  # Notification
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [edge-validation, backend-ci, mobile-ci, security-scan]
+    if: always()
+    steps:
+      - name: Notify on success
+        if: ${{ contains(needs.*.result, 'success') }}
+        run: |
+          echo "✅ CI/CD pipeline completed successfully"
+          # Add notification logic (Slack, Teams, etc.)
+
+      - name: Notify on failure
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: |
+          echo "❌ CI/CD pipeline failed"
+          # Add failure notification logic

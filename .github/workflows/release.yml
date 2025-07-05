@@ -1,0 +1,87 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate changelog from git commits
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## Changes in this Release
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Components
+            - Edge Device Firmware
+            - Cloud Backend API
+            - Mobile Application
+            - Documentation Updates
+
+            ## Installation
+            See the [Installation Guide](README.md#installation) for setup instructions.
+          draft: false
+          prerelease: false
+
+      - name: Build Docker images for release
+        run: |
+          if [ -f "cloud-backend/Dockerfile" ]; then
+            docker build -t ghcr.io/${{ github.repository }}/backend:${{ github.ref_name }} ./cloud-backend
+            docker push ghcr.io/${{ github.repository }}/backend:${{ github.ref_name }}
+          fi
+
+      - name: Package mobile app
+        run: |
+          if [ -d "mobile-app" ]; then
+            cd mobile-app
+            npm ci
+            npm run build
+            # Package for distribution
+          fi
+
+      - name: Package edge firmware
+        run: |
+          if [ -d "Edge" ]; then
+            # Create firmware package
+            tar -czf edge-firmware-${{ github.ref_name }}.tar.gz Edge/
+          fi
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./edge-firmware-${{ github.ref_name }}.tar.gz
+          asset_name: edge-firmware-${{ github.ref_name }}.tar.gz
+          asset_content_type: application/gzip

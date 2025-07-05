@@ -1,0 +1,145 @@
+name: Monitoring & Alerting
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: System Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Backend Health
+        run: |
+          echo "Checking backend health..."
+          # Add health check commands here
+          # curl -f https://api.smart-irrigation.example.com/health || exit 1
+
+      - name: Check Mobile App Store Status
+        run: |
+          echo "Checking mobile app store status..."
+          # Add app store status checks here
+
+      - name: Check Edge Device Connectivity
+        run: |
+          echo "Checking edge device connectivity..."
+          # Add edge device connectivity checks here
+
+      - name: Check Database Performance
+        run: |
+          echo "Checking database performance..."
+          # Add database performance checks here
+
+      - name: Check API Response Times
+        run: |
+          echo "Checking API response times..."
+          # Add API response time checks here
+
+  security-monitoring:
+    name: Security Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Security Vulnerabilities
+        run: |
+          echo "Checking for security vulnerabilities..."
+          # Add security vulnerability checks here
+
+      - name: Monitor Failed Login Attempts
+        run: |
+          echo "Monitoring failed login attempts..."
+          # Add failed login monitoring here
+
+      - name: Check SSL Certificate Status
+        run: |
+          echo "Checking SSL certificate status..."
+          # Add SSL certificate monitoring here
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Monitor API Performance
+        run: |
+          echo "Monitoring API performance..."
+          # Add API performance monitoring here
+
+      - name: Monitor Database Performance
+        run: |
+          echo "Monitoring database performance..."
+          # Add database performance monitoring here
+
+      - name: Monitor Edge Device Performance
+        run: |
+          echo "Monitoring edge device performance..."
+          # Add edge device performance monitoring here
+
+  alert-on-failure:
+    name: Alert on Failure
+    runs-on: ubuntu-latest
+    needs: [health-check, security-monitoring, performance-monitoring]
+    if: failure()
+    steps:
+      - name: Send Slack Alert
+        run: |
+          echo "Sending Slack alert for system failure..."
+          # Add Slack notification here
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🚨 Smart Irrigation System Alert: Monitoring detected failures"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Email Alert
+        run: |
+          echo "Sending email alert for system failure..."
+          # Add email notification here
+
+      - name: Create GitHub Issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 System Monitoring Alert',
+              body: 'Automated monitoring detected system failures. Please investigate immediately.',
+              labels: ['bug', 'monitoring', 'urgent']
+            })
+
+  resource-usage:
+    name: Resource Usage Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Monitor Cloud Resources
+        run: |
+          echo "Monitoring cloud resources..."
+          # Add cloud resource monitoring here
+
+      - name: Monitor Costs
+        run: |
+          echo "Monitoring costs..."
+          # Add cost monitoring here
+
+      - name: Monitor Storage Usage
+        run: |
+          echo "Monitoring storage usage..."
+          # Add storage monitoring here
+
+  cleanup:
+    name: Cleanup Old Resources
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Cleanup Old Docker Images
+        run: |
+          echo "Cleaning up old Docker images..."
+          # Add Docker cleanup commands here
+
+      - name: Cleanup Old Logs
+        run: |
+          echo "Cleaning up old logs..."
+          # Add log cleanup commands here
+
+      - name: Cleanup Test Data
+        run: |
+          echo "Cleaning up test data..."
+          # Add test data cleanup commands here
