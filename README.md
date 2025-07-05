@@ -5,11 +5,11 @@ A comprehensive IoT-based smart irrigation system for automated watering and mon
 ## 🌱 Overview
 
 This project implements a complete smart irrigation solution with:
-- Edge devices for sensor monitoring
-- LoRa mesh networking for remote device communication
-- Cloud backend for data management
-- Mobile app for remote control
-- Real-time analytics and automation
+- **Node devices**: Field-deployed units with integrated sensors (moisture, temperature), actuators (valve control, pumps), and LoRa communication modules
+- **Edge devices**: Gateway units with dual connectivity - LoRa receivers for Node communication and SIM7000G cellular modems for cloud connectivity
+- **Cloud backend**: Scalable data management, analytics, and automation engine
+- **Mobile app**: Cross-platform remote monitoring and control interface
+- **Real-time automation**: Intelligent irrigation scheduling and alert system
 
 ## 🚀 Status
 
@@ -18,11 +18,12 @@ This project implements a complete smart irrigation solution with:
 ## 🏗️ Architecture
 
 ```
-Edge Devices ↔ LoRa Network ↔ Gateway ↔ Cloud Backend ↔ Mobile App
-     ↓            ↓            ↓         ↓              ↓
-   Sensors    433/868/915MHz  TTGO      REST API    React Native
-     ↓            ↓            ↓         ↓              ↓
-  Moisture      Long Range    WiFi   PostgreSQL    iOS/Android
+Node (Sensors/Actuators) → Edge (LoRa + Cellular) → Cloud → Mobile App
+       ↓                     ↓                        ↓        ↓
+   Moisture/Temperature    LoRa Receiver           REST API React Native
+   Valves/Pumps LoRa      SIM7000G Cellular       HTTP   iOS/Android
+   433/868/915MHz          LTE-M/NB-IoT           MQTT   Push Notifications
+                          Data Gateway           Database Real-time Control
 ```
 
 ## 📝 Development Log
@@ -139,8 +140,9 @@ The `Node/` directory contains TTGO LoRa series board implementations for long-r
 - **Multiple board versions**: V1.0, V1.2, V1.6, V2.0
 - **OLED display integration**: Real-time status monitoring
 - **SD card support**: Data logging capabilities
-- **WiFi connectivity**: Gateway functionality
+- **LoRa interface**: Built-in LoRa communication module
 - **Sensor integration**: Soil moisture, temperature monitoring
+- **Actuator control**: Valve and pump control capabilities
 
 ### Board Compatibility
 - TTGO LoRa V1.0 (with 3D WiFi antenna for 868MHz, PCB antenna for 433MHz)
@@ -159,8 +161,8 @@ The `Node/` directory contains TTGO LoRa series board implementations for long-r
 ### Applications
 - **Remote sensors**: Soil moisture, temperature monitoring
 - **Valve control**: Remote irrigation system control
-- **Data gateway**: LoRa to WiFi bridge
-- **Mesh networking**: Extended range coverage
+- **LoRa communication**: Long-range data transmission to Edge devices
+- **Mesh networking**: Extended range coverage through node-to-node communication
 
 ---
 
