@@ -44,7 +44,7 @@
 #include <nvs_flash.h>
 #include <esp_timer.h>
 #include <driver/gpio.h>
-#include <driver/adc.h>
+#include <esp_adc/adc_oneshot.h>
 #include <mqtt_client.h>
 #include <cJSON.h>
 #include <esp_netif.h>
@@ -59,7 +59,7 @@
 #define DEVICE_ID               "irrigation_system_001"
 
 // Pin definitions
-#define SOIL_MOISTURE_ADC_CH    ADC1_CHANNEL_0  // GPIO36
+#define SOIL_MOISTURE_ADC_CH    ADC_CHANNEL_0  // GPIO36
 #define DHT22_PIN               GPIO_NUM_4
 #define DS18B20_PIN             GPIO_NUM_2
 #define PUMP_RELAY_PIN          GPIO_NUM_5
@@ -80,6 +80,9 @@
 #define SENSOR_READ_BIT         BIT2
 #define IRRIGATION_STOP_BIT     BIT3
 #define BUTTON_PRESSED_BIT      BIT4
+
+// Global variables
+static adc_oneshot_unit_handle_t adc1_handle;
 
 // System state structure
 typedef struct {
@@ -134,12 +137,13 @@ static void toggle_manual_mode(void);
 static void publish_sensor_data(void);
 static void publish_status(const char* status);
 static void handle_mqtt_command(const char* topic, const char* data);
-static void dht22_send_start_signal(void);
-static bool dht22_wait_for_response(void);
-static uint8_t dht22_read_byte(void);
-static bool ds18b20_reset(void);
-static void ds18b20_write_byte(uint8_t data);
-static uint8_t ds18b20_read_byte(void);
+// TODO: Implement sensor functions
+// static void dht22_send_start_signal(void);
+// static bool dht22_wait_for_response(void);
+// static uint8_t dht22_read_byte(void);
+// static bool ds18b20_reset(void);
+// static void ds18b20_write_byte(uint8_t data);
+// static uint8_t ds18b20_read_byte(void);
 
 // Main application entry point
 void app_main(void) {
@@ -256,8 +260,16 @@ static void gpio_init(void) {
 
 static void adc_init(void) {
     // Configure ADC
-    adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(SOIL_MOISTURE_ADC_CH, ADC_ATTEN_DB_11);
+    adc_oneshot_unit_init_cfg_t init_config1 = {
+        .unit_id = ADC_UNIT_1,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
+
+    adc_oneshot_chan_cfg_t config = {
+        .bitwidth = ADC_BITWIDTH_12,
+        .atten = ADC_ATTEN_DB_11,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, SOIL_MOISTURE_ADC_CH, &config));
     
     ESP_LOGI(TAG, "ADC initialized");
 }
@@ -294,10 +306,10 @@ static void wifi_init(void) {
 
 static void mqtt_init(void) {
     esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = MQTT_BROKER_URI,
-        .username = MQTT_USERNAME,
-        .password = MQTT_PASSWORD,
-        .client_id = DEVICE_ID,
+        .broker.address.uri = MQTT_BROKER_URI,
+        .credentials.username = MQTT_USERNAME,
+        .credentials.authentication.password = MQTT_PASSWORD,
+        .credentials.client_id = DEVICE_ID,
     };
     
     s_mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
@@ -512,8 +524,11 @@ static void mqtt_task(void* pvParameters) {
 
 static float read_soil_moisture(void) {
     uint32_t adc_reading = 0;
+    int adc_raw;
+    
     for (int i = 0; i < 10; i++) {
-        adc_reading += adc1_get_raw(SOIL_MOISTURE_ADC_CH);
+        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, SOIL_MOISTURE_ADC_CH, &adc_raw));
+        adc_reading += adc_raw;
     }
     adc_reading /= 10;
     
