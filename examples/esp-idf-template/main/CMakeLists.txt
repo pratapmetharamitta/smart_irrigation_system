@@ -1,0 +1,19 @@
+idf_component_register(
+    SRCS 
+        "main.c"
+    INCLUDE_DIRS 
+        "."
+    REQUIRES 
+        driver 
+        esp_wifi 
+        esp_http_client 
+        esp_https_ota
+        mqtt 
+        json 
+        nvs_flash
+        app_update
+        bootloader_support
+        EdgeLoRa
+        EdgeCellular
+        Sensors
+)

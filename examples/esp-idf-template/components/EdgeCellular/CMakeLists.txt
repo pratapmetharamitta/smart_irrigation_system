@@ -1,0 +1,12 @@
+idf_component_register(
+    SRCS 
+        "EdgeCellular.c"
+    INCLUDE_DIRS 
+        "include"
+    REQUIRES 
+        driver 
+        esp_common
+        esp_http_client
+        json
+        freertos
+)
