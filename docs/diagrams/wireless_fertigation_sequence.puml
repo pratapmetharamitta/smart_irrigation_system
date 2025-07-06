@@ -1,0 +1,107 @@
+@startuml Wireless Fertigation Operation Sequence
+
+!theme plain
+title Wireless Automation Irrigation & Fertigation - Operation Sequence
+
+' Font configuration to avoid Java font warnings
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam titleFontName Arial
+skinparam titleFontSize 14
+
+actor "Farm Manager" as farmer
+participant "Mobile App" as mobile
+participant "Cloud Backend" as cloud
+participant "Edge Gateway" as edge
+participant "Fertigation Node" as fert_node
+participant "EC/pH Sensors" as sensors
+participant "Dosing Pumps" as pumps
+participant "Mixing Chamber" as mixer
+
+== Initialization ==
+farmer -> mobile : Open Fertigation Control
+mobile -> cloud : Request System Status
+cloud -> edge : Query Node Status (MQTT)
+edge -> fert_node : Status Request (LoRa)
+fert_node -> sensors : Read Water Quality
+sensors -> fert_node : EC: 1.2 mS/cm, pH: 6.8
+fert_node -> edge : Status Response (LoRa)
+edge -> cloud : Node Status (MQTT)
+cloud -> mobile : System Status Response
+mobile -> farmer : Display Current Status
+
+== Recipe Selection ==
+farmer -> mobile : Select Tomato Recipe
+mobile -> cloud : Request Recipe Details
+cloud -> mobile : Recipe: EC 2.0, pH 6.5, NPK 15-5-10
+mobile -> farmer : Display Recipe Details
+farmer -> mobile : Confirm Recipe Execution
+
+== Fertigation Execution ==
+mobile -> cloud : Execute Fertigation Recipe
+cloud -> edge : Fertigation Command (MQTT)
+edge -> fert_node : Execute Recipe (LoRa)
+
+activate fert_node
+fert_node -> sensors : Monitor Water Quality
+sensors -> fert_node : Current EC: 1.2, pH: 6.8
+
+note right of fert_node : Calculate nutrient requirements:\n• Target EC: 2.0 mS/cm\n• Target pH: 6.5\n• Required nutrients: A, B, C
+
+fert_node -> pumps : Start Dosing Sequence
+activate pumps
+pumps -> mixer : Inject Nutrient A (50ml)
+pumps -> mixer : Inject Nutrient B (30ml)
+pumps -> mixer : Inject Nutrient C (20ml)
+pumps -> mixer : Inject pH Down (10ml)
+deactivate pumps
+
+mixer -> mixer : Mix for 30 seconds
+fert_node -> sensors : Re-check Water Quality
+sensors -> fert_node : EC: 1.9, pH: 6.6
+
+alt EC/pH within tolerance
+    fert_node -> fert_node : Fertigation Complete
+else EC/pH adjustment needed
+    fert_node -> pumps : Fine-tune Dosing
+    pumps -> mixer : Adjust Nutrients
+    fert_node -> sensors : Final Check
+    sensors -> fert_node : EC: 2.0, pH: 6.5
+end
+
+deactivate fert_node
+
+== Status Reporting ==
+fert_node -> edge : Fertigation Complete (LoRa)
+edge -> cloud : Operation Status (MQTT)
+cloud -> mobile : Success Notification
+mobile -> farmer : "Fertigation Complete\nEC: 2.0 mS/cm, pH: 6.5"
+
+== Real-time Monitoring ==
+loop Every 30 seconds
+    fert_node -> sensors : Monitor Water Quality
+    sensors -> fert_node : Current Values
+    fert_node -> edge : Sensor Data (LoRa)
+    edge -> cloud : Telemetry Data (MQTT)
+    cloud -> mobile : Real-time Updates (WebSocket)
+    mobile -> farmer : Live Dashboard Update
+end
+
+== Alert Handling ==
+alt Sensor Alarm
+    sensors -> fert_node : pH Sensor Error
+    fert_node -> edge : Alarm (LoRa)
+    edge -> cloud : Critical Alert (MQTT)
+    cloud -> mobile : Push Notification
+    mobile -> farmer : "pH Sensor Malfunction"
+    farmer -> mobile : Acknowledge Alert
+end
+
+== Data Logging ==
+cloud -> cloud : Store Fertigation Data
+note right of cloud : • Nutrient consumption\n• Water quality trends\n• Recipe performance\n• Equipment runtime
+
+cloud -> cloud : Generate Analytics
+note right of cloud : • Efficiency metrics\n• Cost analysis\n• Predictive maintenance\n• Optimization suggestions
+
+@enduml

@@ -1,0 +1,286 @@
+@startuml IRC2 Operational Flow Diagram
+
+!theme plain
+title IRC2 Master Controller - Operational Flow & Control Modes
+
+' Font configuration to avoid Java font warnings
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam titleFontName Arial
+skinparam titleFontSize 14
+
+' Define colors for different operation types
+!define TIME_COLOR #E3F2FD
+!define VOLUME_COLOR #E8F5E8
+!define SENSOR_COLOR #FFF3E0
+!define PROTECTION_COLOR #FFEBEE
+!define MANUAL_COLOR #F3E5F5
+
+' Start of the system
+start
+
+' System Initialization
+:IRC2 System Startup;
+:Initialize ESP32-S3 Controller;
+:Check Power Systems (Solar + Battery);
+:Initialize Communication Modules (GSM/WiFi/LoRa);
+:Perform System Health Check;
+
+' Communication Establishment
+if (GSM Signal Available?) then (Yes)
+    :Connect via GSM;
+    :Register with Cloud Backend;
+else (No)
+    if (WiFi Available?) then (Yes)
+        :Connect via WiFi;
+        :Register with Cloud Backend;
+    else (No)
+        :Use LoRa for Local Operation;
+        :Enable Offline Mode;
+    endif
+endif
+
+' User Authentication
+:Authenticate Mobile App User;
+note right
+    Up to 10 users supported:
+    • 5 Control users
+    • 5 View-only users
+end note
+
+' Farmer Input Processing
+:Receive Farmer Input from Mobile App;
+
+' Operation Mode Selection
+switch (Operation Mode?)
+case (Time-Based)
+    :<<TIME_COLOR>>Process Time-Based Schedule;
+    :Set Start Time & Duration;
+    :Configure Zone Sequence;
+    :Validate Schedule Parameters;
+    
+case (Volumetric-Based)
+    :<<VOLUME_COLOR>>Process Volume-Based Schedule;
+    :Set Target Volume per Zone;
+    :Configure Flow Rate Monitoring;
+    :Validate Volume Parameters;
+    
+case (Sensor-Based)
+    :<<SENSOR_COLOR>>Process Sensor-Based Schedule;
+    :Read Soil Moisture Levels;
+    :Read Weather Station Data;
+    :Calculate Irrigation Requirements;
+    :Validate Sensor Data;
+    
+endswitch
+
+' Schedule Validation
+if (Schedule Valid?) then (Yes)
+    :Store Schedule in Local Memory;
+    :Send Confirmation to Mobile App;
+else (No)
+    :Send Error Message to User;
+    :Request Schedule Correction;
+    stop
+endif
+
+' Motor Controller Operations
+partition "Motor Controller Operations" {
+    :Send Motor Start Command via LoRa;
+    
+    ' Motor Protection Checks
+    if (Dry Run Protection Check) then (Water Available)
+        if (Phase Check) then (All Phases OK)
+            if (Voltage Check) then (Voltage Stable)
+                if (Current Check) then (Normal Load)
+                    :<<PROTECTION_COLOR>>Start Motor Operation;
+                    :Monitor Motor Status;
+                else (Overload)
+                    :Stop Motor - Overload Protection;
+                    :Send Alert to Mobile App;
+                endif
+            else (Voltage Fluctuation)
+                :Stop Motor - Voltage Protection;
+                :Send Alert to Mobile App;
+            endif
+        else (Phase Failure)
+            :Stop Motor - Phase Protection;
+            :Send Alert to Mobile App;
+        endif
+    else (No Water/Dry Run)
+        :Activate Dry Run Protection;
+        :Send Alert to Mobile App;
+    endif
+}
+
+' Valve Controller Operations
+partition "Valve Controller Operations" {
+    :Process Zone Control Commands;
+    :Calculate Zone Sequence;
+    
+    fork
+        :Control Zone 1 Valves;
+    fork again
+        :Control Zone 2 Valves;
+    fork again
+        :Control Zone 3 Valves;
+    fork again
+        :Control Zone N Valves;
+    end fork
+    
+    :Monitor Valve Status;
+    :Log Valve Operations;
+}
+
+' Fertigation Controller Operations
+partition "Fertigation Controller Operations" {
+    if (Fertigation Required?) then (Yes)
+        :Read Current EC/pH Values;
+        :Load Fertigation Recipe;
+        
+        ' EC/pH Control Loop
+        repeat
+            :Open N Tank Valve (Nitrogen);
+            :Monitor EC Level;
+            if (EC Target Reached?) then (No)
+                :Open P Tank Valve (Phosphorus);
+                :Monitor EC Level;
+                if (EC Target Reached?) then (No)
+                    :Open K Tank Valve (Potassium);
+                    :Monitor EC Level;
+                endif
+            endif
+            
+            :Check pH Level;
+            if (pH Adjustment Needed?) then (Yes)
+                :Activate pH Adjustment;
+                :Open Spare Connection (pH);
+            endif
+            
+            :Start Dosing Pumps;
+            :Control Proportional Mixing;
+            :Monitor Water Quality;
+            
+        repeat while (EC/pH in Range?) is (No)
+        -> Yes;
+        
+        :Close All Fertigation Valves;
+        :Stop Dosing Pumps;
+        :Log Fertigation Operation;
+    endif
+}
+
+' Backwash & Filter Operations
+partition "Backwash & Filter Operations" {
+    :Monitor Inlet Pressure;
+    :Monitor Outlet Pressure;
+    :Calculate Differential Pressure;
+    
+    if (Differential Pressure > Threshold?) then (Yes)
+        :Activate 3-Way Valve (Backwash Position);
+        :Start Backwash Cycle;
+        :Monitor Cleaning Progress;
+        :Timer-Based Backwash Duration;
+        :Return 3-Way Valve to Forward Flow;
+        :Reset Pressure Monitoring;
+        :Log Filter Cleaning Operation;
+    endif
+}
+
+' Weather Station Integration
+partition "Weather Station Monitoring" {
+    fork
+        :Read Rain Sensor;
+    fork again
+        :Read Temperature/Humidity;
+    fork again
+        :Read Wind Speed;
+    fork again
+        :Read Soil Moisture;
+    fork again
+        :Read Flow Sensors;
+    end fork
+    
+    :Process Weather Data;
+    :Apply Weather-Based Overrides;
+    
+    if (Rain Detected?) then (Yes)
+        :Cancel/Delay Irrigation;
+        :Send Weather Alert;
+    endif
+}
+
+' Real-time Monitoring & Logging
+partition "System Monitoring" {
+    fork
+        :Log Motor Operations;
+    fork again
+        :Log Valve Operations;
+    fork again
+        :Log Fertigation Data;
+    fork again
+        :Log Weather Data;
+    fork again
+        :Monitor System Health;
+    end fork
+    
+    :Send Status Updates to Cloud;
+    :Update Mobile App Dashboard;
+}
+
+' Alert Management
+if (System Alerts Generated?) then (Yes)
+    fork
+        :Send Push Notification;
+    fork again
+        :Send SMS Alert;
+    fork again
+        :Make GSM Call (if enabled);
+    fork again
+        :Log Alert in System;
+    end fork
+endif
+
+' Manual Override Handling
+if (Manual Override Requested?) then (Yes)
+    :<<MANUAL_COLOR>>Process Manual Command;
+    :Validate User Permissions;
+    :Execute Manual Operation;
+    :Log Manual Override;
+    :Send Confirmation to User;
+endif
+
+' Signal Loss Handling
+if (Communication Signal Lost?) then (Yes)
+    :Activate Signal Loss Mode;
+    :Continue Local Operations;
+    :Store Data Locally;
+    :Attempt Reconnection;
+    :Send Signal Loss Alert (when reconnected);
+else (Signal OK)
+    :Maintain Cloud Connection;
+    :Sync Data with Cloud;
+endif
+
+' Power Management
+if (Battery Level Low?) then (Yes)
+    :Activate Low Power Mode;
+    :Reduce Communication Frequency;
+    :Send Low Battery Alert;
+    :Prepare for Shutdown;
+else (Battery OK)
+    if (Solar Charging Active?) then (Yes)
+        :Monitor Charging Status;
+        :Optimize Power Usage;
+    endif
+endif
+
+' Continuous Operation Loop
+:Wait for Next Schedule Event;
+
+' Loop back for continuous operation
+note right: System runs continuously,\nmonitoring and executing\nscheduled operations
+
+stop
+
+@enduml

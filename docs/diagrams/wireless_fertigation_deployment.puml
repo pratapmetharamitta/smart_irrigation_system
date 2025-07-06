@@ -1,0 +1,203 @@
+@startuml Wireless Fertigation System Deployment
+
+!theme plain
+title Wireless Automation Irrigation & Fertigation - Deployment Architecture
+
+' Font configuration to avoid Java font warnings
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam titleFontName Arial
+skinparam titleFontSize 14
+
+!define FIELD_COLOR #E8F5E8
+!define CLOUD_COLOR #F3E5F5
+!define MOBILE_COLOR #E3F2FD
+!define NETWORK_COLOR #FFF3E0
+
+' Cloud Infrastructure
+node "Cloud Infrastructure" as cloud_infra <<CLOUD_COLOR>> {
+    node "Load Balancer" as load_balancer {
+        [NGINX] as nginx
+        [SSL Termination] as ssl_term
+    }
+    
+    node "Application Servers" as app_servers {
+        [Node.js Server 1] as node1
+        [Node.js Server 2] as node2
+        [Node.js Server 3] as node3
+    }
+    
+    node "Database Cluster" as db_cluster {
+        [MongoDB Primary] as mongo_primary
+        [MongoDB Secondary] as mongo_secondary
+        [Redis Cache] as redis
+    }
+    
+    node "Message Queue" as message_queue {
+        [MQTT Broker] as mqtt_broker
+        [WebSocket Server] as websocket_server
+    }
+    
+    load_balancer --> app_servers
+    app_servers --> db_cluster
+    app_servers --> message_queue
+}
+
+' Edge Gateway Deployment
+node "Farm Location - Edge Gateway" as edge_location <<FIELD_COLOR>> {
+    node "Control Room" as control_room {
+        [Edge Gateway Device] as edge_device
+        [Power Supply 12V] as power_supply
+        [Antenna Array] as antenna_array
+        [Backup Battery] as backup_battery
+    }
+    
+    edge_device --> power_supply
+    edge_device --> antenna_array
+    edge_device --> backup_battery
+}
+
+' Field Deployment Zone 1
+node "Field Zone 1 - Greenhouse" as field_zone1 <<FIELD_COLOR>> {
+    node "Fertigation Station" as fert_station1 {
+        [Fertigation Node] as fert_node1
+        [EC/pH Sensors] as sensors1
+        [Dosing Pumps] as pumps1
+        [Nutrient Tanks] as tanks1
+        [Solar Panel] as solar1
+        [Battery Pack] as battery1
+    }
+    
+    node "Irrigation Points" as irr_points1 {
+        [Irrigation Node 1] as irr_node1
+        [Soil Sensors] as soil_sensors1
+        [Solenoid Valves] as valves1
+        [Drip Lines] as drip_lines1
+    }
+    
+    fert_node1 --> sensors1
+    fert_node1 --> pumps1
+    fert_node1 --> tanks1
+    fert_node1 --> solar1
+    fert_node1 --> battery1
+    
+    irr_node1 --> soil_sensors1
+    irr_node1 --> valves1
+    irr_node1 --> drip_lines1
+}
+
+' Field Deployment Zone 2
+node "Field Zone 2 - Open Field" as field_zone2 <<FIELD_COLOR>> {
+    node "Fertigation Station" as fert_station2 {
+        [Fertigation Node] as fert_node2
+        [Water Quality Sensors] as sensors2
+        [Injection System] as injection2
+        [Solar Panel] as solar2
+        [Battery Pack] as battery2
+    }
+    
+    node "Irrigation Points" as irr_points2 {
+        [Irrigation Node 2] as irr_node2
+        [Soil Monitoring] as soil_sensors2
+        [Valve Controllers] as valves2
+        [Sprinkler System] as sprinklers2
+    }
+    
+    fert_node2 --> sensors2
+    fert_node2 --> injection2
+    fert_node2 --> solar2
+    fert_node2 --> battery2
+    
+    irr_node2 --> soil_sensors2
+    irr_node2 --> valves2
+    irr_node2 --> sprinklers2
+}
+
+' Weather Station Deployment
+node "Weather Monitoring Station" as weather_station <<FIELD_COLOR>> {
+    [Weather Node] as weather_node
+    [Environmental Sensors] as env_sensors
+    [Wind Vane] as wind_vane
+    [Rain Gauge] as rain_gauge
+    [Solar Radiation Sensor] as solar_sensor
+    [Mast Assembly] as mast
+    [Solar Panel] as weather_solar
+    [Battery Pack] as weather_battery
+    
+    weather_node --> env_sensors
+    weather_node --> wind_vane
+    weather_node --> rain_gauge
+    weather_node --> solar_sensor
+    weather_node --> mast
+    weather_node --> weather_solar
+    weather_node --> weather_battery
+}
+
+' Mobile Devices
+node "Mobile Devices" as mobile_devices <<MOBILE_COLOR>> {
+    [Farm Manager Phone] as manager_phone
+    [Technician Tablet] as tech_tablet
+    [Supervisor Phone] as supervisor_phone
+}
+
+' Network Connections
+cloud_infra <--> edge_location : Internet\nNB-IoT/4G/WiFi
+edge_location <--> field_zone1 : LoRa\n433MHz/868MHz/915MHz
+edge_location <--> field_zone2 : LoRa\n15km Range
+edge_location <--> weather_station : LoRa\nMesh Network
+
+mobile_devices <--> cloud_infra : Mobile Internet\nHTTPS/WebSocket
+
+' Network Topology Details
+package "Network Topology" as network_topology <<NETWORK_COLOR>> {
+    
+    cloud "Internet" as internet {
+        [Mobile Network] as mobile_network
+        [WiFi Network] as wifi_network
+        [Ethernet Network] as ethernet_network
+    }
+    
+    rectangle "LoRa Network" as lora_network {
+        [433MHz Band] as freq_433
+        [868MHz Band] as freq_868
+        [915MHz Band] as freq_915
+        [Mesh Routing] as mesh_routing
+    }
+    
+    rectangle "Power Systems" as power_systems {
+        [Solar + Battery] as solar_battery
+        [AC Power] as ac_power
+        [Backup Generator] as backup_gen
+    }
+}
+
+' Deployment Specifications
+note right of edge_location : **Edge Gateway Specs:**\n• ESP32-S3 + LoRa + SIM7000G\n• 15km LoRa range\n• NB-IoT/4G fallback\n• Local AI processing\n• 12V power supply
+
+note right of field_zone1 : **Fertigation Station:**\n• EC/pH monitoring\n• 4-channel dosing pumps\n• 500L nutrient tanks\n• Solar powered\n• IP67 enclosure
+
+note right of field_zone2 : **Irrigation Points:**\n• Multi-zone control\n• Soil sensor arrays\n• Pressure monitoring\n• Flow measurement\n• Wireless mesh
+
+note right of weather_station : **Weather Station:**\n• 10m mast installation\n• Professional sensors\n• Lightning protection\n• Autonomous operation\n• Data logging
+
+' Coverage Areas
+note as coverage_note
+**LoRa Coverage Areas:**
+• Zone 1: 2km radius (Greenhouse)
+• Zone 2: 5km radius (Open Field)
+• Weather Station: 8km radius
+• Total Coverage: 15km radius
+• Mesh Network: Extended coverage
+end note
+
+' Redundancy & Reliability
+note as reliability_note
+**System Redundancy:**
+• Dual communication paths
+• Battery backup systems
+• Mesh network routing
+• Local data storage
+• Automatic failover
+end note
+
+@enduml

@@ -1,0 +1,342 @@
+@startuml IRC2 Master Controller Detailed Specifications
+
+!theme plain
+title IRC2 Master Controller - Detailed System Specifications
+
+' Font configuration to avoid Java font warnings
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam titleFontName Arial
+skinparam titleFontSize 14
+
+!define MASTER_COLOR #E8F5E8
+!define COMM_COLOR #E3F2FD
+!define POWER_COLOR #FFF3E0
+!define PROTECTION_COLOR #FFEBEE
+!define CONTROL_COLOR #F3E5F5
+
+' IRC2 Master Controller Core
+package "IRC2 Master Controller Core" as irc2_core <<MASTER_COLOR>> {
+    
+    component "Main Processing Unit" as main_cpu {
+        [ESP32-S3 Microcontroller] as esp32_s3
+        [Dual-Core Processing] as dual_core
+        [512KB SRAM] as sram
+        [8MB Flash Memory] as flash_memory
+        [Real-Time OS] as rtos
+        [Watchdog Timer] as watchdog
+        
+        esp32_s3 --> dual_core
+        esp32_s3 --> sram
+        esp32_s3 --> flash_memory
+        esp32_s3 --> rtos
+        esp32_s3 --> watchdog
+    }
+    
+    component "Communication Modules" as comm_modules <<COMM_COLOR>> {
+        [GSM/3G/4G Module] as gsm_module
+        [WiFi 802.11 b/g/n] as wifi_module
+        [LoRa SX1276/SX1278] as lora_module
+        [Bluetooth 5.0] as bluetooth_module
+        [Communication Selector] as comm_selector
+        [Signal Quality Monitor] as signal_monitor
+        
+        comm_selector --> gsm_module
+        comm_selector --> wifi_module
+        comm_selector --> lora_module
+        comm_selector --> bluetooth_module
+        signal_monitor --> comm_selector
+    }
+    
+    component "Power Management" as power_mgmt <<POWER_COLOR>> {
+        [Solar Panel Controller] as solar_controller
+        [MPPT Charge Controller] as mppt_controller
+        [Battery Management System] as bms
+        [12V Lead Acid Battery] as battery_12v
+        [Power Distribution] as power_dist
+        [Backup Timer (72+ Hours)] as backup_timer
+        [Low Power Mode] as low_power_mode
+        
+        solar_controller --> mppt_controller
+        mppt_controller --> bms
+        bms --> battery_12v
+        power_dist --> backup_timer
+        power_dist --> low_power_mode
+    }
+    
+    component "Protection & Monitoring" as protection <<PROTECTION_COLOR>> {
+        [Connection Monitor] as conn_monitor
+        [Signal Lost Detection] as signal_lost
+        [Power Failure Alert] as power_alert
+        [System Health Monitor] as health_monitor
+        [Error Logging] as error_logging
+        [Recovery System] as recovery_system
+        
+        conn_monitor --> signal_lost
+        conn_monitor --> power_alert
+        health_monitor --> error_logging
+        health_monitor --> recovery_system
+    }
+}
+
+' Field Controllers Interface
+package "Field Controllers Interface" as field_interface <<CONTROL_COLOR>> {
+    
+    component "Motor Controller Interface" as motor_interface {
+        [Motor Command Processor] as motor_cmd
+        [Motor Status Monitor] as motor_status
+        [Protection Signal Handler] as motor_protection
+        
+        motor_cmd --> motor_status
+        motor_cmd --> motor_protection
+    }
+    
+    component "Valve Controller Interface" as valve_interface {
+        [Valve Command Processor] as valve_cmd
+        [Multi-Zone Scheduler] as zone_scheduler
+        [Valve Status Monitor] as valve_status
+        
+        valve_cmd --> zone_scheduler
+        valve_cmd --> valve_status
+    }
+    
+    component "Fertigation Controller Interface" as fert_interface {
+        [Fertigation Command Processor] as fert_cmd
+        [EC/pH Monitor Interface] as ec_ph_interface
+        [Recipe Manager] as recipe_manager
+        [Dosing Control Interface] as dosing_interface
+        
+        fert_cmd --> ec_ph_interface
+        fert_cmd --> recipe_manager
+        fert_cmd --> dosing_interface
+    }
+    
+    component "Sensor Interface" as sensor_interface {
+        [Weather Station Interface] as weather_interface
+        [Soil Sensor Interface] as soil_interface
+        [Flow Sensor Interface] as flow_interface
+        [Environmental Data Processor] as env_processor
+        
+        weather_interface --> env_processor
+        soil_interface --> env_processor
+        flow_interface --> env_processor
+    }
+}
+
+' Mobile App Features
+package "Mobile App Features" as mobile_features <<COMM_COLOR>> {
+    
+    component "Smart Scheduling System" as smart_scheduling {
+        [Time-Based Scheduling] as time_based
+        [Volumetric-Based Scheduling] as volume_based
+        [Sensor-Based Scheduling] as sensor_based
+        [Farmer Input Processor] as farmer_input
+        [Schedule Optimizer] as schedule_optimizer
+        
+        farmer_input --> time_based
+        farmer_input --> volume_based
+        farmer_input --> sensor_based
+        schedule_optimizer --> farmer_input
+    }
+    
+    component "User Management System" as user_mgmt {
+        [User Authentication] as user_auth
+        [Role-Based Access] as role_access
+        [Control Users (5 Max)] as control_users
+        [View-Only Users (5 Max)] as view_users
+        [Permission Manager] as permission_mgr
+        
+        user_auth --> role_access
+        role_access --> control_users
+        role_access --> view_users
+        permission_mgr --> role_access
+    }
+    
+    component "Communication Features" as comm_features {
+        [GSM Call Option] as gsm_call
+        [SMS Alerts] as sms_alerts
+        [Push Notifications] as push_notifications
+        [Signal Status Display] as signal_status
+        [Connection Failover] as conn_failover
+        
+        gsm_call --> sms_alerts
+        signal_status --> conn_failover
+    }
+    
+    component "Logging & Monitoring" as logging_monitoring {
+        [Motor/Valve Operation Log] as operation_log
+        [System Status Log] as status_log
+        [Alert History] as alert_history
+        [Performance Analytics] as performance_analytics
+        [Data Export] as data_export
+        
+        operation_log --> status_log
+        status_log --> alert_history
+        alert_history --> performance_analytics
+        performance_analytics --> data_export
+    }
+}
+
+' Detailed Motor Controller Specifications
+package "Motor Controller Specifications" as motor_specs <<PROTECTION_COLOR>> {
+    
+    component "Motor Protection System" as motor_protection_sys {
+        [Dry Run Protection] as dry_run
+        [Phase Failure Detection] as phase_failure
+        [Voltage Fluctuation Monitor] as voltage_monitor
+        [Overload Protection (Amp Monitor)] as overload_protection
+        [Motor Temperature Monitor] as motor_temp
+        [Emergency Stop] as emergency_stop
+        
+        dry_run --> emergency_stop
+        phase_failure --> emergency_stop
+        voltage_monitor --> emergency_stop
+        overload_protection --> emergency_stop
+        motor_temp --> emergency_stop
+    }
+    
+    component "Motor Control Features" as motor_control {
+        [Soft Start/Stop] as soft_start
+        [Speed Control (VFD)] as speed_control
+        [Direction Control] as direction_control
+        [Motor Status Feedback] as motor_feedback
+        [Runtime Tracking] as runtime_tracking
+        
+        soft_start --> speed_control
+        speed_control --> direction_control
+        motor_feedback --> runtime_tracking
+    }
+}
+
+' Detailed Valve Controller Specifications
+package "Valve Controller Specifications" as valve_specs <<CONTROL_COLOR>> {
+    
+    component "Valve Control System" as valve_control_sys {
+        [Multi-Zone Management] as multi_zone
+        [Sequence Programming] as sequence_prog
+        [Flow Control] as flow_control
+        [Pressure Regulation] as pressure_reg
+        [Valve Position Feedback] as valve_feedback
+        
+        multi_zone --> sequence_prog
+        sequence_prog --> flow_control
+        flow_control --> pressure_reg
+        valve_feedback --> multi_zone
+    }
+    
+    component "Scheduling Features" as valve_scheduling {
+        [Time-Based Control] as valve_time
+        [Volume-Based Control] as valve_volume
+        [Sensor-Based Control] as valve_sensor
+        [Weather-Based Override] as weather_override
+        [Manual Override] as manual_override
+        
+        valve_time --> weather_override
+        valve_volume --> weather_override
+        valve_sensor --> weather_override
+        manual_override --> weather_override
+    }
+}
+
+' Detailed Fertigation Controller Specifications
+package "Fertigation Controller Specifications" as fert_specs <<CONTROL_COLOR>> {
+    
+    component "4-Valve Fertigation System" as four_valve_system {
+        [N Tank Valve (Nitrogen)] as n_valve
+        [P Tank Valve (Phosphorus)] as p_valve
+        [K Tank Valve (Potassium)] as k_valve
+        [Spare Connection Valve] as spare_valve
+        [Valve Sequencer] as valve_sequencer
+        
+        valve_sequencer --> n_valve
+        valve_sequencer --> p_valve
+        valve_sequencer --> k_valve
+        valve_sequencer --> spare_valve
+    }
+    
+    component "EC/pH Control System" as ec_ph_system {
+        [EC Sensor (0-10 mS/cm)] as ec_sensor
+        [pH Sensor (0-14 pH)] as ph_sensor
+        [Temperature Compensation] as temp_compensation
+        [Calibration System] as calibration_system
+        [Auto-Adjustment] as auto_adjustment
+        
+        ec_sensor --> temp_compensation
+        ph_sensor --> temp_compensation
+        calibration_system --> auto_adjustment
+    }
+    
+    component "Dosing Pump System" as dosing_system {
+        [Peristaltic Dosing Pumps] as peristaltic_pumps
+        [Proportional Control] as proportional_control
+        [Flow Rate Control] as flow_rate_control
+        [Dosing Accuracy ±2%] as dosing_accuracy
+        [Pump Protection] as pump_protection
+        
+        peristaltic_pumps --> proportional_control
+        proportional_control --> flow_rate_control
+        flow_rate_control --> dosing_accuracy
+        pump_protection --> peristaltic_pumps
+    }
+}
+
+' Backwash & Filter System
+package "Backwash & Filter System" as backwash_system <<PROTECTION_COLOR>> {
+    
+    component "3-Way Valve Control" as three_way_valve {
+        [Forward Flow Position] as forward_flow
+        [Backwash Position] as backwash_position
+        [Closed Position] as closed_position
+        [Position Feedback] as position_feedback
+        
+        forward_flow --> position_feedback
+        backwash_position --> position_feedback
+        closed_position --> position_feedback
+    }
+    
+    component "Pressure Monitoring" as pressure_monitoring {
+        [Inlet Pressure Sensor] as inlet_pressure
+        [Outlet Pressure Sensor] as outlet_pressure
+        [Differential Pressure] as diff_pressure
+        [Pressure Threshold] as pressure_threshold
+        [Auto Backwash Trigger] as auto_backwash
+        
+        inlet_pressure --> diff_pressure
+        outlet_pressure --> diff_pressure
+        diff_pressure --> pressure_threshold
+        pressure_threshold --> auto_backwash
+    }
+    
+    component "Filter Management" as filter_management {
+        [Disc Filter Monitor] as disc_filter
+        [Cleaning Cycle Timer] as cleaning_timer
+        [Backwash Duration] as backwash_duration
+        [Filter Status] as filter_status
+        
+        disc_filter --> cleaning_timer
+        cleaning_timer --> backwash_duration
+        filter_status --> disc_filter
+    }
+}
+
+' System Connections
+irc2_core <--> field_interface : LoRa Communication
+irc2_core <--> mobile_features : GSM/WiFi/Internet
+field_interface --> motor_specs : Motor Control Commands
+field_interface --> valve_specs : Valve Control Commands
+field_interface --> fert_specs : Fertigation Commands
+field_interface --> backwash_system : Backwash Commands
+
+' Power Connections
+power_mgmt --> motor_specs : Protected Power Supply
+power_mgmt --> valve_specs : Protected Power Supply
+power_mgmt --> fert_specs : Protected Power Supply
+power_mgmt --> backwash_system : Protected Power Supply
+
+' Monitoring Connections
+protection --> motor_specs : System Health Monitoring
+protection --> valve_specs : System Health Monitoring
+protection --> fert_specs : System Health Monitoring
+protection --> backwash_system : System Health Monitoring
+
+@enduml

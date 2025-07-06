@@ -1,0 +1,257 @@
+@startuml Wireless Automation Irrigation & Fertigation System (IRC2 Based)
+
+!theme plain
+title Wireless Automation Irrigation & Fertigation System - IRC2 Master Controller
+
+' Font configuration to avoid Java font warnings
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam titleFontName Arial
+skinparam titleFontSize 14
+
+' Define colors
+!define MOBILE_COLOR #E3F2FD
+!define CLOUD_COLOR #F3E5F5
+!define MASTER_COLOR #E8F5E8
+!define CONTROLLER_COLOR #FFF3E0
+!define SENSOR_COLOR #FFEBEE
+!define ACTUATOR_COLOR #E0F2F1
+
+' Mobile App Layer
+package "Mobile App Layer" as mobile_layer <<MOBILE_COLOR>> {
+    [Mobile App\n(React Native)\niOS/Android] as mobile_app
+    [Smart Scheduling\nSystem] as smart_scheduling
+    [Multi-User Management\n(Up to 10 Users)] as user_management
+    [Motor/Valve Log\nViewer] as log_viewer
+    [GSM Call Option] as gsm_call
+    [Alert Management] as alert_management
+    
+    mobile_app --> smart_scheduling
+    mobile_app --> user_management
+    mobile_app --> log_viewer
+    mobile_app --> gsm_call
+    mobile_app --> alert_management
+    
+    note right of user_management : 5 Users can control\n5 Users can only view
+}
+
+' Cloud Backend Layer
+package "Cloud Backend Layer" as cloud_layer <<CLOUD_COLOR>> {
+    [API Gateway\n(Express.js)] as api_gateway
+    [User Authentication\n& Authorization] as auth_service
+    [Device Management\nService] as device_service
+    [Scheduling Engine] as scheduling_engine
+    [Data Processing\nService] as data_service
+    [MQTT Broker] as mqtt_broker
+    [WebSocket Server] as websocket_server
+    [GSM Gateway] as gsm_gateway
+    
+    database "MongoDB\nDatabase" as mongodb {
+        [User Profiles] as user_profiles
+        [Device Configuration] as device_config
+        [Sensor Data] as sensor_data
+        [Fertigation Recipes] as recipes
+        [Motor/Valve Logs] as operation_logs
+        [Weather Data] as weather_data
+    }
+    
+    api_gateway --> auth_service
+    api_gateway --> device_service
+    api_gateway --> scheduling_engine
+    api_gateway --> data_service
+    data_service --> mongodb
+    device_service --> mqtt_broker
+    websocket_server --> mobile_app
+    gsm_gateway --> mobile_app
+}
+
+' Master Controller Layer (IRC2)
+package "Master Controller Layer (IRC2)" as master_layer <<MASTER_COLOR>> {
+    node "IRC2 Master Controller" as irc2_master {
+        [ESP32 Main Controller] as esp32_main
+        [GSM Module] as gsm_module
+        [WiFi Module] as wifi_module
+        [LoRa Module] as lora_module
+        [Solar Power Management] as solar_power
+        [Battery Backup System\n(72+ Hours)] as battery_backup
+        [Communication Manager] as comm_manager
+        [Connection Monitor] as conn_monitor
+        
+        esp32_main --> gsm_module
+        esp32_main --> wifi_module
+        esp32_main --> lora_module
+        esp32_main --> solar_power
+        esp32_main --> battery_backup
+        esp32_main --> comm_manager
+        esp32_main --> conn_monitor
+    }
+    
+    [Farmer Input Processor] as farmer_input
+    [Scheduling Engine] as local_scheduling
+    [Signal Loss Detector] as signal_detector
+    
+    irc2_master --> farmer_input
+    irc2_master --> local_scheduling
+    irc2_master --> signal_detector
+    
+    note right of irc2_master : • GSM/WiFi/LoRa Connectivity\n• Solar + Battery Operation\n• 72+ Hour Backup\n• Signal Loss Detection
+}
+
+' Field Controllers Layer
+package "Field Controllers Layer" as controllers_layer <<CONTROLLER_COLOR>> {
+    node "Motor Controller" as motor_controller {
+        [Motor Control Unit] as motor_unit
+        [Dry Run Protection] as dry_run_protection
+        [Phase Failure Detection] as phase_failure
+        [Voltage Fluctuation Monitor] as voltage_monitor
+        [Overload Protection] as overload_protection
+        [Motor Driver] as motor_driver
+        
+        motor_unit --> dry_run_protection
+        motor_unit --> phase_failure
+        motor_unit --> voltage_monitor
+        motor_unit --> overload_protection
+        motor_unit --> motor_driver
+    }
+    
+    node "Valve Controller" as valve_controller {
+        [Valve Control Unit] as valve_unit
+        [Multi-Zone Controller] as multi_zone
+        [Scheduling Interface] as schedule_interface
+        [Valve Drivers] as valve_drivers
+        
+        valve_unit --> multi_zone
+        valve_unit --> schedule_interface
+        valve_unit --> valve_drivers
+    }
+    
+    node "Fertigation Controller" as fertigation_controller {
+        [4-Valve Controller\n(N, P, K, Spare)] as four_valve_ctrl
+        [EC/pH Monitor] as ec_ph_monitor
+        [Dosing Pump Controller] as dosing_pump_ctrl
+        [Proportional Control] as proportional_ctrl
+        [On/Off Valve Controller] as onoff_valve_ctrl
+        
+        four_valve_ctrl --> ec_ph_monitor
+        four_valve_ctrl --> dosing_pump_ctrl
+        four_valve_ctrl --> proportional_ctrl
+        four_valve_ctrl --> onoff_valve_ctrl
+    }
+    
+    node "Backwash & Filter Controller" as backwash_controller {
+        [3-Way Valve Controller] as three_way_valve
+        [Dual Pressure Sensors] as dual_pressure
+        [Filter Cleaning Logic] as filter_logic
+        
+        three_way_valve --> dual_pressure
+        three_way_valve --> filter_logic
+    }
+}
+
+' Sensor Systems
+package "Sensor Systems" as sensor_layer <<SENSOR_COLOR>> {
+    rectangle "Weather Station & Sensors" as weather_sensors {
+        [Rain Sensor] as rain_sensor
+        [Flow Sensor] as flow_sensor
+        [Moisture Sensor] as moisture_sensor
+        [Humidity Sensor] as humidity_sensor
+        [Temperature Sensor] as temperature_sensor
+        [Wind Speed Sensor] as wind_speed_sensor
+    }
+    
+    rectangle "Soil Monitoring" as soil_sensors {
+        [Soil Moisture\nSensors] as soil_moisture
+        [Soil Temperature\nSensors] as soil_temp
+        [Soil pH Sensors] as soil_ph
+        [Soil EC Sensors] as soil_ec
+    }
+    
+    rectangle "Water Quality & Flow" as water_sensors {
+        [Water EC Sensor] as water_ec
+        [Water pH Sensor] as water_ph
+        [Water Temperature\nSensor] as water_temp
+        [Flow Meters] as flow_meters
+        [Pressure Sensors] as pressure_sensors
+    }
+}
+
+' Actuator Systems
+package "Actuator Systems" as actuator_layer <<ACTUATOR_COLOR>> {
+    rectangle "Motor Systems" as motor_systems {
+        [Water Pump Motors] as water_pumps
+        [Motor Protection\nSystems] as motor_protection
+        [Phase Monitoring] as phase_monitoring
+    }
+    
+    rectangle "Valve Systems" as valve_systems {
+        [Irrigation Valves\n(Multi-zone)] as irrigation_valves
+        [Fertigation Valves\n(N, P, K, Spare)] as fertigation_valves
+        [3-Way Backwash\nValves] as backwash_valves
+        [On/Off Control\nValves] as onoff_valves
+    }
+    
+    rectangle "Fertigation Hardware" as fertigation_hardware {
+        [Dosing Pumps] as dosing_pumps
+        [Nutrient Tanks\n(N, P, K)] as nutrient_tanks
+        [Mixing Chamber] as mixing_chamber
+        [EC/pH Probes] as ec_ph_probes
+    }
+    
+    rectangle "Filtration System" as filtration_system {
+        [Disc Filters] as disc_filters
+        [Backwash System] as backwash_system
+        [Pressure Sensors\n(Inlet/Outlet)] as filter_pressure
+    }
+}
+
+' Communication Connections
+mobile_app <--> api_gateway : HTTPS/REST API
+websocket_server <--> mobile_app : WebSocket\n(Real-time Updates)
+gsm_gateway <--> mobile_app : GSM Call Option
+
+api_gateway <--> mqtt_broker : Internal API
+mqtt_broker <--> gsm_module : MQTT over GSM
+mqtt_broker <--> wifi_module : MQTT over WiFi
+mqtt_broker <--> lora_module : MQTT over LoRa
+
+irc2_master <--> motor_controller : LoRa Commands\n(Time/Volume/Sensor Based)
+irc2_master <--> valve_controller : LoRa Commands\n(Farmer Input Based)
+irc2_master <--> fertigation_controller : LoRa Commands\n(EC/pH Based)
+irc2_master <--> backwash_controller : LoRa Commands\n(Pressure Based)
+
+' Sensor Connections
+motor_controller --> water_sensors : Motor Protection Sensors
+valve_controller --> soil_sensors : Zone Control Sensors
+fertigation_controller --> water_sensors : EC/pH Monitoring
+backwash_controller --> filter_pressure : Pressure Monitoring
+weather_sensors --> irc2_master : Weather Data (LoRa)
+
+' Actuator Connections
+motor_controller --> motor_systems : Motor Control Signals
+valve_controller --> valve_systems : Valve Control Signals
+fertigation_controller --> fertigation_hardware : Dosing Control
+backwash_controller --> filtration_system : Filter Control
+
+' Data Flow Annotations
+note right of mobile_app : • Smart Scheduling (Time/Volume/Sensor)\n• Multi-user access (10 users)\n• Motor/Valve logging\n• GSM call capability\n• Real-time alerts
+
+note right of irc2_master : • GSM/WiFi/LoRa connectivity\n• Solar + 72h battery backup\n• Signal loss detection\n• Farmer input processing\n• Local scheduling
+
+note right of motor_controller : • Dry run protection\n• Phase failure detection\n• Voltage monitoring\n• Overload protection\n• Motor control
+
+note right of fertigation_controller : • 4-valve control (N,P,K,Spare)\n• EC/pH monitoring\n• Dosing pump control\n• Proportional control\n• Safety interlocks
+
+note right of backwash_controller : • 3-way valve control\n• Dual pressure sensing\n• Automatic filter cleaning\n• Disc filter management
+
+' Legend
+legend right
+|Color| Component Type |
+|<back:MOBILE_COLOR>     | Mobile Application Layer |
+|<back:CLOUD_COLOR>      | Cloud Backend Services |
+|<back:MASTER_COLOR>     | IRC2 Master Controller |
+|<back:CONTROLLER_COLOR> | Field Controllers |
+|<back:SENSOR_COLOR>     | Sensor Systems |
+|<back:ACTUATOR_COLOR>   | Actuator Systems |
+endlegend
+
+@enduml

@@ -1,0 +1,211 @@
+@startuml Wireless Fertigation System Components
+
+!theme plain
+title Wireless Automation Irrigation & Fertigation - Detailed Components
+
+' Font configuration to avoid Java font warnings
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam titleFontName Arial
+skinparam titleFontSize 14
+
+!define HARDWARE_COLOR #FFE0B2
+!define SOFTWARE_COLOR #E1F5FE
+!define SENSOR_COLOR #FFEBEE
+!define COMM_COLOR #E8F5E8
+!define CONTROL_COLOR #F3E5F5
+
+' Edge Gateway Components
+package "Edge Gateway (ESP32 + LoRa + SIM7000G)" as edge_gateway <<HARDWARE_COLOR>> {
+    
+    component "ESP32 Main Controller" as esp32_main {
+        [FreeRTOS Kernel] as freertos
+        [WiFi Stack] as wifi_stack
+        [Bluetooth Stack] as bt_stack
+        [I2C/SPI Drivers] as io_drivers
+    }
+    
+    component "Communication Modules" as comm_modules <<COMM_COLOR>> {
+        [LoRa SX1276] as lora_module
+        [SIM7000G NB-IoT/4G] as sim7000g_module
+        [WiFi 802.11] as wifi_module
+        [Ethernet PHY] as ethernet_phy
+    }
+    
+    component "Software Stack" as software_stack <<SOFTWARE_COLOR>> {
+        [Communication Manager] as comm_manager
+        [Protocol Handler] as protocol_handler
+        [Data Aggregator] as data_aggregator
+        [Edge AI Engine] as edge_ai
+        [Local Storage] as local_storage
+        [Security Manager] as security_manager
+    }
+    
+    esp32_main --> comm_modules
+    esp32_main --> software_stack
+}
+
+' Fertigation Node Components
+package "Fertigation Node (ESP32 + Sensors + Actuators)" as fert_node <<HARDWARE_COLOR>> {
+    
+    component "ESP32 Fertigation Controller" as esp32_fert {
+        [Task Scheduler] as task_scheduler
+        [ADC/DAC Drivers] as adc_drivers
+        [PWM Controllers] as pwm_controllers
+        [I2C Interface] as i2c_interface
+    }
+    
+    component "Water Quality Sensors" as water_sensors <<SENSOR_COLOR>> {
+        [Atlas Scientific EC Sensor] as ec_sensor
+        [Atlas Scientific pH Sensor] as ph_sensor
+        [DS18B20 Temperature] as temp_sensor
+        [Flow Meter] as flow_meter
+    }
+    
+    component "Dosing System" as dosing_system <<CONTROL_COLOR>> {
+        [Peristaltic Pump A] as pump_a
+        [Peristaltic Pump B] as pump_b
+        [Peristaltic Pump C] as pump_c
+        [pH Adjustment Pump] as pump_ph
+        [Relay Module] as relay_module
+    }
+    
+    component "Fertigation Software" as fert_software <<SOFTWARE_COLOR>> {
+        [Recipe Engine] as recipe_engine
+        [Sensor Manager] as sensor_manager
+        [Pump Controller] as pump_controller
+        [Safety Monitor] as safety_monitor
+        [LoRa Communication] as lora_comm
+    }
+    
+    esp32_fert --> water_sensors
+    esp32_fert --> dosing_system
+    esp32_fert --> fert_software
+}
+
+' Irrigation Node Components
+package "Irrigation Node (ESP32 + Sensors + Valves)" as irr_node <<HARDWARE_COLOR>> {
+    
+    component "ESP32 Irrigation Controller" as esp32_irr {
+        [Multi-task Kernel] as mt_kernel
+        [GPIO Controllers] as gpio_controllers
+        [Analog Readers] as analog_readers
+        [Timer Management] as timer_mgmt
+    }
+    
+    component "Soil Sensors" as soil_sensors <<SENSOR_COLOR>> {
+        [Soil Moisture Sensors] as moisture_sensors
+        [Soil Temperature] as soil_temp
+        [Soil EC Sensors] as soil_ec
+        [Soil pH Sensors] as soil_ph
+    }
+    
+    component "Irrigation Actuators" as irrigation_actuators <<CONTROL_COLOR>> {
+        [Solenoid Valves] as solenoid_valves
+        [Master Valve] as master_valve
+        [Pressure Sensors] as pressure_sensors
+        [Flow Control] as flow_control
+    }
+    
+    component "Irrigation Software" as irr_software <<SOFTWARE_COLOR>> {
+        [Zone Controller] as zone_controller
+        [Scheduling Engine] as scheduling_engine
+        [Sensor Reader] as sensor_reader
+        [Valve Controller] as valve_controller
+    }
+    
+    esp32_irr --> soil_sensors
+    esp32_irr --> irrigation_actuators
+    esp32_irr --> irr_software
+}
+
+' Weather Station Components
+package "Weather Station (ESP32 + Environmental Sensors)" as weather_station <<HARDWARE_COLOR>> {
+    
+    component "ESP32 Weather Controller" as esp32_weather {
+        [Sensor Polling] as sensor_polling
+        [Data Logging] as data_logging
+        [Communication Stack] as comm_stack
+    }
+    
+    component "Environmental Sensors" as env_sensors <<SENSOR_COLOR>> {
+        [BME280 (Temp/Humidity/Pressure)] as bme280
+        [Anemometer] as anemometer
+        [Rain Gauge] as rain_gauge
+        [Solar Radiation] as solar_sensor
+        [UV Index Sensor] as uv_sensor
+    }
+    
+    esp32_weather --> env_sensors
+}
+
+' Mobile App Components
+package "Mobile Application (React Native)" as mobile_app <<SOFTWARE_COLOR>> {
+    
+    component "UI Components" as ui_components {
+        [Dashboard Screen] as dashboard_screen
+        [Fertigation Control] as fert_control_screen
+        [Recipe Management] as recipe_screen
+        [Settings Screen] as settings_screen
+        [Alert Manager] as alert_manager
+    }
+    
+    component "Services" as app_services {
+        [API Client] as api_client
+        [WebSocket Client] as websocket_client
+        [Local Storage] as app_storage
+        [Push Notifications] as push_notifications
+        [Authentication] as app_auth
+    }
+    
+    ui_components --> app_services
+}
+
+' Cloud Backend Components
+package "Cloud Backend (Node.js/Express)" as cloud_backend <<SOFTWARE_COLOR>> {
+    
+    component "API Services" as api_services {
+        [Authentication API] as auth_api
+        [Device Management API] as device_api
+        [Data Processing API] as data_api
+        [Recipe Management API] as recipe_api
+        [Analytics API] as analytics_api
+    }
+    
+    component "Communication Services" as comm_services {
+        [MQTT Broker] as mqtt_broker
+        [WebSocket Server] as websocket_server
+        [HTTP Server] as http_server
+    }
+    
+    component "Data Services" as data_services {
+        [MongoDB Driver] as mongo_driver
+        [Redis Cache] as redis_cache
+        [Time Series DB] as timeseries_db
+    }
+    
+    api_services --> comm_services
+    api_services --> data_services
+}
+
+' Communication Links
+edge_gateway <--> fert_node : LoRa\n433MHz/868MHz/915MHz
+edge_gateway <--> irr_node : LoRa\n15km Range
+edge_gateway <--> weather_station : LoRa\nMesh Network
+
+edge_gateway <--> cloud_backend : NB-IoT/4G\nMQTT over TCP
+edge_gateway <--> cloud_backend : WiFi\nMQTT over TCP (Backup)
+
+mobile_app <--> cloud_backend : HTTPS REST API
+mobile_app <--> cloud_backend : WebSocket\nReal-time Updates
+
+' Data Flow Annotations
+note right of edge_gateway : • Protocol translation\n• Data aggregation\n• Edge AI processing\n• Local decision making
+
+note right of fert_node : • EC/pH monitoring\n• Nutrient injection\n• Recipe execution\n• Safety interlocks
+
+note right of irr_node : • Soil monitoring\n• Multi-zone control\n• Automated scheduling\n• Water management
+
+note right of weather_station : • Environmental data\n• Weather prediction\n• Irrigation optimization\n• Crop protection
+
+@enduml
