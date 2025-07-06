@@ -1,0 +1,53 @@
+menu "Smart Irrigation System Configuration"
+
+    config SMART_IRRIGATION_WIFI_SSID
+        string "WiFi SSID"
+        default "YOUR_WIFI_SSID"
+        help
+            SSID (network name) for the WiFi connection.
+
+    config SMART_IRRIGATION_WIFI_PASSWORD
+        string "WiFi Password"
+        default "YOUR_WIFI_PASSWORD"
+        help
+            Password for the WiFi connection.
+
+    config SMART_IRRIGATION_MQTT_BROKER_URI
+        string "MQTT Broker URI"
+        default "mqtt://your-broker.com:1883"
+        help
+            URI of the MQTT broker to connect to.
+
+    config SMART_IRRIGATION_MQTT_USERNAME
+        string "MQTT Username"
+        default "your_mqtt_user"
+        help
+            Username for MQTT authentication.
+
+    config SMART_IRRIGATION_MQTT_PASSWORD
+        string "MQTT Password"
+        default "your_mqtt_password"
+        help
+            Password for MQTT authentication.
+
+    config SMART_IRRIGATION_DEVICE_ID
+        string "Device ID"
+        default "irrigation_system_001"
+        help
+            Unique identifier for this irrigation system device.
+
+    config SMART_IRRIGATION_MOISTURE_THRESHOLD
+        int "Soil Moisture Threshold (%)"
+        default 30
+        range 10 90
+        help
+            Soil moisture percentage below which irrigation starts.
+
+    config SMART_IRRIGATION_MAX_TIME_MINUTES
+        int "Maximum Irrigation Time (minutes)"
+        default 5
+        range 1 60
+        help
+            Maximum time for a single irrigation cycle in minutes.
+
+endmenu

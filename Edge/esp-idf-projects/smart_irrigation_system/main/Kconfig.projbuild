@@ -1,0 +1,60 @@
+menu "Smart Irrigation System Configuration"
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "MyWiFiNetwork"
+        help
+            SSID (network name) for the WiFi network to connect to.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "MyWiFiPassword"
+        help
+            WiFi password (WPA or WPA2) for the WiFi network.
+
+    config MQTT_BROKER_URL
+        string "MQTT Broker URL"
+        default "mqtt://test.mosquitto.org:1883"
+        help
+            URL of the MQTT broker to connect to.
+
+    config MQTT_USERNAME
+        string "MQTT Username"
+        default ""
+        help
+            Username for MQTT broker authentication (leave empty if not required).
+
+    config MQTT_PASSWORD
+        string "MQTT Password"
+        default ""
+        help
+            Password for MQTT broker authentication (leave empty if not required).
+
+    config DEVICE_ID
+        string "Device ID"
+        default "smart_irrigation_001"
+        help
+            Unique identifier for this device.
+
+    config SOIL_MOISTURE_THRESHOLD
+        int "Soil Moisture Threshold (%)"
+        range 0 100
+        default 30
+        help
+            Soil moisture threshold below which irrigation will be triggered.
+
+    config IRRIGATION_DURATION
+        int "Irrigation Duration (seconds)"
+        range 1 3600
+        default 300
+        help
+            Duration for which irrigation will run when triggered.
+
+    config SENSOR_READ_INTERVAL
+        int "Sensor Read Interval (seconds)"
+        range 1 3600
+        default 30
+        help
+            Interval between sensor readings.
+
+endmenu

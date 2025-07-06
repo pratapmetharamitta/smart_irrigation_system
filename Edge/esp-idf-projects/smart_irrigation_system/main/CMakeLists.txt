@@ -1,0 +1,21 @@
+idf_component_register(
+    SRCS 
+        "smart_irrigation_main.c"
+    INCLUDE_DIRS 
+        "."
+    REQUIRES 
+        driver
+        esp_wifi
+        esp_netif
+        esp_event
+        esp_timer
+        mqtt
+        json
+        nvs_flash
+        esp_http_client
+        wifi_manager
+        mqtt_client
+        sensor_manager
+        irrigation_controller
+        system_config
+)

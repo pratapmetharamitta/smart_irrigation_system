@@ -126,7 +126,7 @@ Key configuration options for Smart Irrigation System:
 
 ### T-SIM7000G Board Configuration
 
-For the T-SIM7000G board used in this project, create a custom board configuration:
+For the T-SIM7000G board with T-Higrow LoRa Shield used in this project, create a custom board configuration:
 
 ```c
 // main/board_config.h
@@ -141,12 +141,12 @@ For the T-SIM7000G board used in this project, create a custom board configurati
 #define MODEM_UART_RXD    GPIO_NUM_27
 #define MODEM_UART_NUM    UART_NUM_1
 
-// I2C Configuration
+// I2C Configuration (for sensors)
 #define I2C_SDA_PIN       GPIO_NUM_21
 #define I2C_SCL_PIN       GPIO_NUM_22
 #define I2C_FREQ_HZ       400000
 
-// LoRa SPI Configuration
+// T-Higrow LoRa Shield SPI Configuration
 #define LORA_SCK_PIN      GPIO_NUM_18
 #define LORA_MISO_PIN     GPIO_NUM_19
 #define LORA_MOSI_PIN     GPIO_NUM_23
@@ -154,9 +154,18 @@ For the T-SIM7000G board used in this project, create a custom board configurati
 #define LORA_RST_PIN      GPIO_NUM_14
 #define LORA_DIO0_PIN     GPIO_NUM_32
 
+// Smart Irrigation System Sensors
+#define SOIL_MOISTURE_PIN GPIO_NUM_36    // ADC pin for soil moisture
+#define DHT22_PIN         GPIO_NUM_33    // DHT22 temperature/humidity
+#define DS18B20_PIN       GPIO_NUM_32    // Soil temperature sensor
+
+// Irrigation Control
+#define PUMP_RELAY_PIN    GPIO_NUM_13    // Water pump relay
+#define VALVE_RELAY_PIN   GPIO_NUM_12    // Solenoid valve relay
+
 // Additional GPIOs
-#define LED_PIN           GPIO_NUM_12
-#define BUTTON_PIN        GPIO_NUM_35
+#define LED_PIN           GPIO_NUM_2     // Status LED
+#define BUTTON_PIN        GPIO_NUM_35    // Manual override button
 
 #endif // BOARD_CONFIG_H
 ```

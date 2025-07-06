@@ -87,7 +87,8 @@ The project includes custom configuration options accessible via `idf.py menucon
 ## Hardware Support
 
 This template is configured for:
-- **Primary Board**: T-SIM7000G (ESP32 + SIM7000G)
+- **Primary Board**: T-SIM7000G (ESP32 + SIM7000G cellular modem)
+- **LoRa Communication**: Shield LoRa attached to T-SIM7000G
 - **Alternative Boards**: Any ESP32 board with appropriate pin configuration
 
 ## Next Steps
